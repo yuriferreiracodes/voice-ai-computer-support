@@ -1,0 +1,32 @@
+# Local stack: Next.js frontend + FastAPI backend. All AI runs on OpenRouter
+# (set OPENROUTER_API_KEY in .env).
+services:
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
+      LLM_MODEL: ${LLM_MODEL:-qwen/qwen3.8-omni-flash}
+      LLM_REASONING: ${LLM_REASONING:-false}
+      TTS_MODEL: ${TTS_MODEL-elevenlabs/eleven-flash-v2.5}
+      TTS_VOICE: ${TTS_VOICE:-21m00Tcm4TlvDq8ikWAM}
+      TTS_FORMAT: ${TTS_FORMAT:-mp3}
+      AI_TIMEOUT_S: ${AI_TIMEOUT_S:-60}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      GREETING_ENABLED: ${GREETING_ENABLED:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    restart: unless-stopped
